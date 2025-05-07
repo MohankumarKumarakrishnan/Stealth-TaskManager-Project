@@ -33,6 +33,7 @@ const Login = () => {
       }
 
       localStorage.setItem("token", data.token);
+      localStorage.setItem("username", data.name);
       alert('login successfull')
       navigate("/dashboard");
     } catch (err) {

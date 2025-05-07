@@ -47,7 +47,7 @@ module.exports.loginUser = async (req, res) => {
       
         const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '24h' });
 
-        res.status(200).json({ msg: 'Login successful', token });
+        res.status(200).json({ msg: 'Login successful', token,name:user.name });
     } catch (error) {
         console.error("Error in login user controller",error);
         res.status(500).json({ msg: 'Server error' });
