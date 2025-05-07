@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 const Register = () => {
   const [user, setUser] = useState({
+    name:'',
     email: '',
     password: '',
   });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = Navigate();
 
   const handleClick = async (e) => {
     e.preventDefault(); 
@@ -19,6 +22,8 @@ const Register = () => {
       return setError('Please provide a valid email');
     } else if (user.password.length < 6) {
       return setError('Password must be at least 6 characters');
+    }else if(user.name.trim() === ''){
+        return setError('Name field must not be empty');
     }
 
     setIsLoading(true);
@@ -33,6 +38,8 @@ const Register = () => {
       const parseResp = await sendUserInfo.json();
       console.log(parseResp);
       setError(null);
+      alert('Registration successfull please login')
+       navigate('/login')
     } catch (err) {
       setError(err.message);
       console.log(err);
@@ -46,6 +53,13 @@ const Register = () => {
       <div className="w-full max-w-sm p-6 bg-white rounded-2xl shadow-xl">
         <h2 className="text-2xl font-bold text-center mb-6">Register</h2>
         <form className="space-y-4">
+        <input
+            type="text"
+            placeholder="Name"
+            value={user.name}
+            onChange={(e) => setUser({ ...user, name: e.target.value })}
+            className="w-full p-3 border rounded-xl"
+          />
           <input
             type="email"
             placeholder="Email"
