@@ -1,4 +1,5 @@
 const Task = require("../models/tasks");
+require("dotenv").config();
 
 module.exports.createNewTask = async (req, res) => {
   try {
