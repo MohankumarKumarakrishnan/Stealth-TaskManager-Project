@@ -15,7 +15,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/tasks/getall", {
+        const response = await fetch("https://stealth-taskmanager-project.onrender.com/api/tasks/getall", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -45,7 +45,7 @@ export default function Dashboard() {
     setSuccess(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/tasks/newtask", {
+      const response = await fetch("https://stealth-taskmanager-project.onrender.com/api/tasks/newtask", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -76,7 +76,7 @@ export default function Dashboard() {
     setSuccess(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/update/${id}`, {
+      const response = await fetch(`https://stealth-taskmanager-project.onrender.com/api/tasks/update/${id}`, {
         method: "PUT",
         headers: {
           'Content-Type': 'application/json',
@@ -105,7 +105,7 @@ export default function Dashboard() {
     setSuccess(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/tasks/delete/${id}`, {
+      const response = await fetch(`https://stealth-taskmanager-project.onrender.com/api/tasks/delete/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

@@ -29,7 +29,7 @@ const Register = () => {
     setIsLoading(true);
 
     try {
-      const sendUserInfo = await fetch('http://localhost:5000/api/user/register', {
+      const sendUserInfo = await fetch('https://stealth-taskmanager-project.onrender.com/api/user/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(user),
