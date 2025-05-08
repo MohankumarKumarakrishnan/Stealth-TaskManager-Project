@@ -1,33 +1,127 @@
-import { useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import { useState, useEffect } from 'react';
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 
 export default function Dashboard() {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'Medium' });
   const [filter, setFilter] = useState('All');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  const handleAddTask = () => {
-    if (newTask.title.trim() !== '') {
-      const task = {
-        id: uuidv4(),
-        title: newTask.title,
-        description: newTask.description,
-        priority: newTask.priority,
-        status: 'incomplete',
-        createdAt: new Date().toISOString(),
-        userId: '12345' 
-      };
-      setTasks([...tasks, task]);
+  const token = localStorage.getItem("token");
+
+ 
+  useEffect(() => {
+    const fetchTasks = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/tasks/getall", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.msg || "Failed to fetch tasks");
+        setTasks(data.tasks);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+
+    fetchTasks();
+  }, [token]);
+
+  const handleAddTask = async () => {
+    if (!newTask.title.trim()) return;
+
+    const task = {
+      ...newTask,
+      status: 'incomplete',
+      createdAt: new Date().toISOString(),
+    };
+
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/tasks/newtask", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(task),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.msg || 'Failed to add task');
+
+      setTasks([...tasks, data.task]); 
       setNewTask({ title: '', description: '', priority: 'Medium' });
+      setSuccess('Task added successfully!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleToggleStatus = (id) => {
-    setTasks(tasks.map(task => task.id === id ? { ...task, status: task.status === 'complete' ? 'incomplete' : 'complete' } : task));
+  const handleToggleStatus = async (id) => {
+    const taskToUpdate = tasks.find(task => task._id === id);
+    const updatedStatus = taskToUpdate.status === 'complete' ? 'incomplete' : 'complete';
+
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/tasks/update/${id}`, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: updatedStatus }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.msg || 'Failed to update task');
+
+      setTasks(tasks.map(task =>
+        task._id === id ? { ...task, status: updatedStatus } : task
+      ));
+      setSuccess('Task status updated!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleDelete = (id) => {
-    setTasks(tasks.filter(task => task.id !== id));
+  const handleDelete = async (id) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/tasks/delete/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.msg || 'Failed to delete task');
+
+      setTasks(tasks.filter(task => task._id !== id));
+      setSuccess('Task deleted successfully!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const filteredTasks = tasks.filter(task => {
@@ -41,7 +135,7 @@ export default function Dashboard() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-4xl font-bold mb-6 text-center">Task Management</h1>
 
-        <div className="bg-white rounded-2xl p-6 shadow-lg mb-8">
+        <div className="bg-white rounded-2xl p-6 shadow-lg mb-4">
           <h2 className="text-xl font-semibold mb-4">Add New Task</h2>
           <div className="space-y-4">
             <input
@@ -68,10 +162,13 @@ export default function Dashboard() {
             </select>
             <button
               onClick={handleAddTask}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition"
+              disabled={isLoading}
+              className="w-full bg-blue-600 text-white py-3 rounded-xl hover:bg-blue-700 transition disabled:opacity-50"
             >
-              Add Task
+              {isLoading ? 'Adding...' : 'Add Task'}
             </button>
+            {success && <div className="flex items-center gap-2 text-green-600"><CheckCircleIcon className="w-5 h-5" />{success}</div>}
+            {error && <div className="flex items-center gap-2 text-red-600"><XCircleIcon className="w-5 h-5" />{error}</div>}
           </div>
         </div>
 
@@ -89,7 +186,7 @@ export default function Dashboard() {
 
         <ul className="space-y-4">
           {filteredTasks.map(task => (
-            <li key={task.id} className="bg-white p-5 rounded-2xl shadow flex flex-col md:flex-row md:justify-between gap-4">
+            <li key={task._id} className="bg-white p-5 rounded-2xl shadow flex flex-col md:flex-row md:justify-between gap-4">
               <div>
                 <h3 className="text-lg font-bold mb-1">{task.title}</h3>
                 <p className="text-sm text-gray-600 mb-2">{task.description}</p>
@@ -97,18 +194,17 @@ export default function Dashboard() {
                   <p>Priority: <span className={`font-semibold ${task.priority === 'High' ? 'text-red-500' : task.priority === 'Medium' ? 'text-yellow-500' : 'text-green-500'}`}>{task.priority}</span></p>
                   <p>Status: <span className={task.status === 'complete' ? 'text-green-600 font-semibold' : 'text-yellow-600 font-semibold'}>{task.status}</span></p>
                   <p>Created At: {new Date(task.createdAt).toLocaleString()}</p>
-                  <p>User ID: {task.userId}</p>
                 </div>
               </div>
               <div className="flex flex-col gap-2 justify-center items-end">
                 <button
-                  onClick={() => handleToggleStatus(task.id)}
+                  onClick={() => handleToggleStatus(task._id)}
                   className="px-3 py-2 rounded-xl text-white bg-green-600 hover:bg-green-700"
                 >
                   {task.status === 'complete' ? 'Mark Incomplete' : 'Mark Complete'}
                 </button>
                 <button
-                  onClick={() => handleDelete(task.id)}
+                  onClick={() => handleDelete(task._id)}
                   className="px-3 py-2 rounded-xl text-white bg-red-500 hover:bg-red-600"
                 >
                   Delete
