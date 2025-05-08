@@ -33,7 +33,7 @@ module.exports.updateTask = async (req, res) => {
     const { taskId } = req.params;
     const userId = req.user.id;
   
-    const task = await Task.findById(id);
+    const task = await Task.findById(taskId);
     if (!task) return res.status(404).json({ msg: "Task not found" });
     if (task.userId.toString() !== userId) {
       return res.status(403).json({ msg: "Not authorized to update this task" });
