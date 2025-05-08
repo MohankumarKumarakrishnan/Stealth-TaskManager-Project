@@ -39,7 +39,7 @@ const Register = () => {
       console.log(parseResp);
       setError(null);
       alert('Registration successfull please login')
-       navigate('/login')
+       navigate('/')
     } catch (err) {
       setError(err.message);
       console.log(err);
