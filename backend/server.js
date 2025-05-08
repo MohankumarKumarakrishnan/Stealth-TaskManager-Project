@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const bodyParser = require("body-parser");
 require("dotenv").config();
 
@@ -15,6 +16,16 @@ app.use(bodyParser.urlencoded({urlencoded:true}));
 
 app.use('/api',userAuthRoute)
 app.use('/api',tasksRoute)
+
+if(process.env.ENVIRONMENT === "PRODUCTION"){
+    app.use(express.static(path.join(__dirname, "../client/build")));
+
+    app.get("*", (req, res) => {
+      res.sendFile(path.join(__dirname, "../client/build/index.html"));
+    });
+}
+
+
 
 app.listen(PORT,()=>{
 
