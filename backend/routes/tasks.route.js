@@ -7,7 +7,7 @@ router.get('/tasks/getall',auth,getAllTasks)
 
 router.post('/tasks/newtask',auth,createNewTask)
 
-router.put('/tasks/update/:id',auth,updateTask)
+router.put('/tasks/update/:taskId',auth,updateTask)
 
 router.delete('/tasks/delete/:id',auth,deleteTask)
 

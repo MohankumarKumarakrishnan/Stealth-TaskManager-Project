@@ -29,7 +29,7 @@ module.exports.createNewTask = async (req, res) => {
 
 module.exports.updateTask = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { taskId } = req.params;
     const userId = req.user.id;
   
     const task = await Task.findById(id);
